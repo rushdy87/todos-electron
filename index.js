@@ -17,6 +17,21 @@ app.on('ready', () => {
 const menuTemplate = [
   {
     label: 'File',
-    submenu: [{ label: 'New Todo' }],
+    submenu: [
+      { label: 'New Todo' },
+      {
+        label: 'Quit',
+        accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+        click() {
+          app.quit();
+        },
+      },
+    ],
   },
 ];
+
+//
+if (process.platform === 'darwin') {
+  menuTemplate.unshift({ label: '' });
+}
+// Darwin is the core Unix operating system of macOS, iOS, watchOS, tvOS, iPadOS, visionOS, and bridgeOS.
