@@ -1,6 +1,6 @@
 const electron = require('electron');
 
-const { app, BrowserWindow, Menu } = electron;
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 let mainWindow;
 let addWindow;
@@ -20,10 +20,17 @@ function createAddWindow() {
   addWindow = new BrowserWindow({
     width: 300,
     height: 200,
-    title: 'Add new ToDo',
+    title: 'Add New Todo',
+    webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
   addWindow.loadURL(`file://${__dirname}/add.html`);
+  addWindow.on('closed', () => (addWindow = null));
 }
+
+ipcMain.on('todo:add', (event, todo) => {
+  mainWindow.webContents.send('todo:add', todo);
+  addWindow.close();
+});
 
 const menuTemplate = [
   {
@@ -46,8 +53,23 @@ const menuTemplate = [
   },
 ];
 
-//
+// Darwin is the core Unix operating system of macOS, iOS, watchOS, tvOS, iPadOS, visionOS, and bridgeOS.
 if (process.platform === 'darwin') {
   menuTemplate.unshift({ label: '' });
 }
-// Darwin is the core Unix operating system of macOS, iOS, watchOS, tvOS, iPadOS, visionOS, and bridgeOS.
+
+if (process.env.NODE_ENV !== 'production') {
+  menuTemplate.push({
+    label: 'View',
+    submenu: [
+      {
+        label: 'Toggle Developer Tools',
+        accelerator:
+          process.platform === 'darwin' ? 'Command+Alt+I' : 'Ctrl+Shift+I',
+        click(item, focusedWindow) {
+          focusedWindow.toggleDevTools();
+        },
+      },
+    ],
+  });
+}
